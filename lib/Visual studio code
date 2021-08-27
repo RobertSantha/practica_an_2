@@ -1,0 +1,110 @@
+/*
+REST Client written in visual stuido code for Login,Authorization,Request
+*/
+
+@baseUrl = https://dev-qbs.oncloud.gr/s1services
+
+# @name login
+POST {{baseUrl}} HTTP/1.1
+content-type: application/json
+
+    {
+        "service": "login",
+        "username": "Practica",
+        "password": "12345",
+        "appId": "1000"
+    }
+
+
+###
+
+@authToken1 = {{login.response.body.clientID}}
+@comp = {{login.response.body.$..COMPANY}}
+@branch = {{login.response.body.$..BRANCH}}
+@module = {{login.response.body.$..MODULE}}
+@refid = {{login.response.body.$..REFID}}
+
+# @name Authorization
+POST {{baseUrl}} HTTP/1.1
+Authorization: {{authToken1}}
+Content-Type: application/json
+
+{
+    "service": "authenticate",
+    "clientID": "{{authToken1}}",	
+    "COMPANY": "{{comp}}",
+    "BRANCH": "{{branch}}",
+    "MODULE": "{{module}}",
+    "REFID": "{{refid}}"
+}
+
+
+###
+
+@authToken2 = {{Authorization.response.body.clientID}}
+@appId = {{login.response.body.appid}}
+# @name Request
+POST {{baseUrl}} HTTP/1.1
+content-type: application/json
+Accept: application/json
+
+{
+    "service": "SqlData",
+    "clientID": "{{authToken2}}",
+    "appId": "{{appId}}",
+    "SqlName": "PracticaSql",
+    "company" : 1,
+    "min":1,
+    "max":10
+    
+}
+
+
+###
+@authToken3 = {{Authorization.response.body.clientID}}
+
+@appId2 = {{login.response.body.appid}}
+# @name backoffice
+
+
+@MTRL1={{Request.response.body.rows[0].MTRL}}
+@MTRL2={{Request.response.body.rows[1].MTRL}}
+@MTRL3={{Request.response.body.rows[2].MTRL}}
+@Q1=13
+@Q2=1
+@Q3=1
+
+
+POST {{baseUrl}} HTTP/1.1
+content-type: application/json
+Accept: application/json
+
+{
+    "service": "setData",
+    "clientID": "{{authToken3}}",
+    "appId": "{{appId2}}",
+    "OBJECT": "ITEDOC",
+    "data": {
+        "ITEDOC":[
+            {
+                "SERIES": "3001",
+                "TRNDATE":"2021-08-20",
+                "COMMENTS": "Hello World!!!"
+            }
+        ],
+        "ITELINES": [
+            {
+                "MTRL": "{{MTRL1}}",
+                "QTY1": 13
+            },
+            {
+                "MTRL": "{{MTRL2}}",
+                "QTY": "{{Q2}}"
+            },
+            {
+                "MTRL": "{{MTRL3}}",
+                "QTY": "{{Q3}}"
+            },
+        ]
+    }
+}
