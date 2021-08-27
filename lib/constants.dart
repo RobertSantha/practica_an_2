@@ -1,0 +1,1 @@
+const int httptimeoutseconds = 30;
